@@ -58,14 +58,15 @@ function optionalAuth(req, res, next) {
 }
 
 /**
- * Validate TrackerRMS API key
+ * Validate TrackerRMS API key from header only (not query params for security)
  */
 function validateTrackerRMSKey(req, res, next) {
-  const apiKey = req.headers['x-trackerrms-api-key'] || req.query.apiKey;
+  // Only accept API key from header to avoid logging sensitive data in URLs
+  const apiKey = req.headers['x-trackerrms-api-key'];
 
   if (!apiKey) {
     return res.status(400).json({
-      error: 'TrackerRMS API key required'
+      error: 'TrackerRMS API key required in X-TrackerRMS-API-Key header'
     });
   }
 

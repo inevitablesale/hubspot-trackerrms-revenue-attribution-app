@@ -119,7 +119,7 @@ describe('API Integration Tests', () => {
         const response = await request(app).get('/api/dashboards/attribution');
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe('TrackerRMS API key required');
+        expect(response.body.error).toBe('TrackerRMS API key required in X-TrackerRMS-API-Key header');
       });
     });
 

@@ -20,8 +20,27 @@ class ScoringService {
       const jobCreatedDate = new Date(job.createdAt || job.openDate);
       const placementDate = new Date(placement.startDate || placement.createdAt);
 
-      // Calculate days to fill
-      const daysToFill = Math.max(0, (placementDate - jobCreatedDate) / (1000 * 60 * 60 * 24));
+      // Validate dates
+      if (isNaN(jobCreatedDate.getTime()) || isNaN(placementDate.getTime())) {
+        logger.warn('Invalid dates for velocity calculation', {
+          jobDate: job.createdAt || job.openDate,
+          placementDate: placement.startDate || placement.createdAt
+        });
+        return 0;
+      }
+
+      // Calculate days to fill - negative values indicate data issues
+      const daysToFill = (placementDate - jobCreatedDate) / (1000 * 60 * 60 * 24);
+
+      // Handle edge case where placement date is before job creation
+      if (daysToFill < 0) {
+        logger.warn('Placement date is before job creation date', {
+          jobDate: jobCreatedDate.toISOString(),
+          placementDate: placementDate.toISOString()
+        });
+        // Still calculate score but treat as same-day
+        return 100;
+      }
 
       // Scoring: 100 = filled same day, decreasing by 2 points per day
       // Minimum score of 10

@@ -199,8 +199,9 @@ class HubSpotService {
       logger.info('Created deal property in HubSpot', { propertyName: propertyDefinition.name });
       return response;
     } catch (error) {
-      // Property might already exist
-      if (error.code === 409) {
+      // Property might already exist - check for 409 status
+      const statusCode = error.code || error.status || error.response?.status;
+      if (statusCode === 409) {
         logger.info('Deal property already exists', { propertyName: propertyDefinition.name });
         return null;
       }

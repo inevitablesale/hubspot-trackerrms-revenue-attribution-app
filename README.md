@@ -206,6 +206,17 @@ Calculated based on revenue, margin, and attribution costs.
 | `SESSION_SECRET` | Yes | Session encryption key |
 | `LOG_LEVEL` | No | Logging level (default: info) |
 
+## Security
+
+This application implements multiple layers of security:
+
+- **Rate Limiting**: Global rate limiting (100 req/15min) and stricter webhook limits (60 req/min)
+- **Helmet.js**: Security headers including Content-Security-Policy
+- **Session Security**: HTTP-only cookies with SameSite protection
+- **API Key Headers**: All API keys are passed via headers, never in query parameters
+- **HubSpot Signature Verification**: Webhook requests are verified using HMAC signatures
+- **Input Validation**: All inputs are validated before processing
+
 ## License
 
 MIT

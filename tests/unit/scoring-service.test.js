@@ -60,8 +60,8 @@ describe('ScoringService', () => {
 
       const score = scoringService.calculateROIScore(placement, attribution);
 
-      // ROI = (10000 - 1500) / 1500 * 100 = 567%
-      // Score = min(100, 567/5) = 100
+      // ROI = (10000 - 1500) / 1500 * 100 = 566.67%
+      // Score = min(100, 566.67/5) = 100
       expect(score).toBeLessThanOrEqual(100);
       expect(score).toBeGreaterThan(0);
     });

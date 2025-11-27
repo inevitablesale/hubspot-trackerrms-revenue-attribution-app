@@ -6,6 +6,7 @@ const session = require('express-session');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const { config } = require('./config');
 const logger = require('./logger');
 const { errorHandler, requestLogger } = require('./middleware/auth');
@@ -19,10 +20,34 @@ const webhookRoutes = require('./api/webhook-routes');
 
 const app = express();
 
+// Trust proxy for rate limiting behind load balancers
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: config.nodeEnv === 'production'
 }));
+
+// Rate limiting - general limiter for all routes
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+});
+
+// Stricter rate limiting for webhook endpoints
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // 60 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many webhook requests' }
+});
+
+// Apply general rate limiting to all requests
+app.use(generalLimiter);
 
 // Request parsing
 app.use(express.json());
@@ -37,7 +62,8 @@ app.use(session({
   cookie: {
     secure: config.nodeEnv === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax' // CSRF protection
   }
 }));
 
@@ -49,7 +75,7 @@ if (config.nodeEnv !== 'test') {
   app.use(requestLogger);
 }
 
-// Health check endpoint
+// Health check endpoint (no rate limiting needed)
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -106,7 +132,7 @@ app.use('/oauth', authRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/crm-cards', crmCardRoutes);
 app.use('/api/dashboards', dashboardRoutes);
-app.use('/api/webhooks', webhookRoutes);
+app.use('/api/webhooks', webhookLimiter, webhookRoutes);
 
 // 404 handler
 app.use((req, res) => {

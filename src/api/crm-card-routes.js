@@ -18,10 +18,11 @@ const scoringService = new ScoringService();
 router.get('/job/:jobId', async (req, res) => {
   try {
     const { jobId } = req.params;
-    const apiKey = req.headers['x-trackerrms-api-key'] || req.query.apiKey;
+    // Only accept API key from header for security
+    const apiKey = req.headers['x-trackerrms-api-key'];
 
     if (!apiKey) {
-      return res.json(crmCardService.buildErrorCard('TrackerRMS API key required'));
+      return res.json(crmCardService.buildErrorCard('TrackerRMS API key required in header'));
     }
 
     const trackerrms = getClient(apiKey);
@@ -49,10 +50,11 @@ router.get('/job/:jobId', async (req, res) => {
 router.get('/placement/:placementId', async (req, res) => {
   try {
     const { placementId } = req.params;
-    const apiKey = req.headers['x-trackerrms-api-key'] || req.query.apiKey;
+    // Only accept API key from header for security
+    const apiKey = req.headers['x-trackerrms-api-key'];
 
     if (!apiKey) {
-      return res.json(crmCardService.buildErrorCard('TrackerRMS API key required'));
+      return res.json(crmCardService.buildErrorCard('TrackerRMS API key required in header'));
     }
 
     const trackerrms = getClient(apiKey);
@@ -90,10 +92,11 @@ router.get('/placement/:placementId', async (req, res) => {
  */
 router.get('/attribution/:dealId', async (req, res) => {
   try {
-    const apiKey = req.headers['x-trackerrms-api-key'] || req.query.apiKey;
+    // Only accept API key from header for security
+    const apiKey = req.headers['x-trackerrms-api-key'];
 
     if (!apiKey) {
-      return res.json(crmCardService.buildErrorCard('TrackerRMS API key required'));
+      return res.json(crmCardService.buildErrorCard('TrackerRMS API key required in header'));
     }
 
     const trackerrms = getClient(apiKey);
